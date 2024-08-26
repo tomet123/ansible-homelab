@@ -1,0 +1,99 @@
+---
+- name: Check if proxmox configuration exist
+  ansible.builtin.stat:
+    path: /etc/pve
+  register: state
+
+- name: Check if target machine is proxmox
+  ansible.builtin.fail:
+    msg: "Whoops! This machine is not a proxmox"
+  when: not state.stat.exists
+
+- name: Correct debian packages
+  ansible.builtin.template:
+    src: sources.list.tmpl
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Adding a pve enterprise repo
+  ansible.builtin.copy:
+    dest: "/etc/apt/sources.list.d/pve-enterprise.list"
+    content: "deb https://enterprise.proxmox.com/debian/pve {{ ansible_distribution_release }} pve-enterprise \n"
+  when: proxmox_enterprise_repo 
+
+- name: Removing a pve enterprise repo
+  ansible.builtin.file:
+    dest: "/etc/apt/sources.list.d/pve-enterprise.list"
+    state: absent
+  when: not proxmox_enterprise_repo 
+
+- name: Adding a pve non enterprise repo
+  ansible.builtin.copy:
+    dest: "/etc/apt/sources.list.d/pve-install-repo.list"
+    content: "deb http://download.proxmox.com/debian/pve {{ ansible_distribution_release }} pve-no-subscription \n"
+  when: proxmox_non_enterprise_repo 
+
+- name: Removing a pve non enterprise repo
+  ansible.builtin.file:
+    dest: "/etc/apt/sources.list.d/pve-install-repo.list"
+    state: absent
+  when: not proxmox_non_enterprise_repo 
+
+- name: Adding a pve testing repo
+  ansible.builtin.copy:
+    dest: "/etc/apt/sources.list.d/pvetest-for-beta.list"
+    content: "deb http://download.proxmox.com/debian/pve {{ ansible_distribution_release }} pvetest \n"
+  when: proxmox_testing_repo 
+
+- name: Removing a pve testing repo
+  ansible.builtin.file:
+    dest: "/etc/apt/sources.list.d/pvetest-for-beta.list"
+    state: absent
+  when: not proxmox_testing_repo 
+
+- name: Adding a pve ceph repo
+  ansible.builtin.copy:
+    dest: "/etc/apt/sources.list.d/ceph.list"
+    content: "deb http://download.proxmox.com/debian/ceph-quincy {{ ansible_distribution_release }} no-subscription \n"
+  when: proxmox_ceph_repo 
+
+- name: Removing a pve ceph repo
+  ansible.builtin.file:
+    dest: "/etc/apt/sources.list.d/ceph.list"
+    state: absent
+  when: not proxmox_ceph_repo 
+
+
+- name: Disable licence warning on login
+  ansible.builtin.copy:
+    src: "no-nag-script"
+    dest: "/etc/apt/apt.conf.d/no-nag-script"
+  when: proxmox_disable_licence_warning
+  notify:
+    - Reinstall proxmox-widget-toolkit
+
+- name: Enable licence warning on login
+  ansible.builtin.file:
+    dest: "/etc/apt/apt.conf.d/no-nag-script"
+    state: absent
+  when: not proxmox_disable_licence_warning
+  notify:
+    - Reinstall proxmox-widget-toolkit
+
+- name: Stop and disable ha services
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  with_items: ['pve-ha-lrm','pve-ha-crm','corosync']
+  when: proxmox_disable_ha
+
+- name: Start and enable ha services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  with_items: ['pve-ha-lrm','pve-ha-crm','corosync']
+  when: not proxmox_disable_ha

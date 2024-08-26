@@ -1,0 +1,47 @@
+---
+- name: Check if it is x86 intel CPU
+  ansible.builtin.set_fact:
+    cpu_vendor: 'intel'
+  when: 
+    - ansible_processor | lower is search("intel")
+    - ansible_architecture == "x86_64"
+
+- name: Check if it is x86 amd CPU
+  ansible.builtin.set_fact:
+    cpu_vendor: 'amd'
+  when: 
+    - ansible_processor | lower is search("amd")
+    - ansible_architecture == "x86_64"
+
+- name: install intel microcode
+  ansible.builtin.package:
+    name: "{{ intel_cpu_packages }}"
+  when:
+    - ansible_virtualization_role == 'host'
+    - cpu_vendor == 'intel'
+
+- name: install amd microcode
+  ansible.builtin.package:
+    name: "{{ amd_cpu_packages }}"
+  when:
+    - ansible_virtualization_role == 'host'
+    - cpu_vendor == 'amd'
+
+
+- name: remove intel microcode for VMs
+  ansible.builtin.package:
+    name: "{{ intel_cpu_packages }}"
+    state: absent
+    purge: true
+  when:
+    - ansible_virtualization_role == 'guest'
+    - cpu_vendor == 'intel'
+
+- name: remove amd microcode for VMs
+  ansible.builtin.package:
+    name: "{{ amd_cpu_packages }}"
+    state: absent
+    purge: true
+  when:
+    - ansible_virtualization_role == 'guest'
+    - cpu_vendor == 'amd'

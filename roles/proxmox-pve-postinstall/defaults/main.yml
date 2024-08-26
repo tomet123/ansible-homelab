@@ -1,0 +1,13 @@
+---
+proxmox_enterprise_repo: false
+proxmox_non_enterprise_repo: true
+proxmox_testing_repo: false
+proxmox_ceph_repo: false
+
+# disable warning on login to proxmox
+proxmox_disable_licence_warning: false
+
+# If you plan to utilize a single node instead of a clustered environment, 
+# you can disable unnecessary high availability (HA) services, thus reclaiming system resources.
+#If HA becomes necessary at a later stage, the services can be re-enabled.
+proxmox_disable_ha: false

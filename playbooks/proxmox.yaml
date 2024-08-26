@@ -1,0 +1,14 @@
+- name: Setup proxmox
+  hosts: proxmox
+  become: true
+  gather_facts: True
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3)
+      changed_when: False
+    - setup: # aka gather_facts
+  roles:
+      - proxmox-pve-postinstall
+      - cpu-microcode
+  vars:
+    proxmox_disable_ha: true

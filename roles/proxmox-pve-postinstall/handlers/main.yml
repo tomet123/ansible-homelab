@@ -1,0 +1,5 @@
+---
+# handlers file for proxmox-pve-postinstall
+- name: Reinstall proxmox-widget-toolkit
+  command: "apt --reinstall install proxmox-widget-toolkit"
+  failed_when: False
