@@ -1,0 +1,14 @@
+- name: Generate dns allow list
+  ansible.builtin.template:
+    src: ipa-ext.conf.j2
+    dest: /etc/named/ipa-ext.conf
+  notify:
+    - Restart ipa
+
+
+- name: Generate dns allow list
+  ansible.builtin.template:
+    src: ipa-options-ext.conf.j2
+    dest: /etc/named/ipa-options-ext.conf
+  notify:
+    - Restart ipa

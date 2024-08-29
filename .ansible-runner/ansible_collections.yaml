@@ -1,3 +1,4 @@
 collections:
   - "freeipa.ansible_freeipa"
   - "devsec.hardening"
+  - "middleware_automation.keycloak"

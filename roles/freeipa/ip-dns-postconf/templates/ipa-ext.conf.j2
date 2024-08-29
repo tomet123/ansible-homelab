@@ -1,0 +1,5 @@
+acl "trusted_network" {
+  {% for network in ipa_dns_networks %}
+  {{ network }};
+  {% endfor %}
+};

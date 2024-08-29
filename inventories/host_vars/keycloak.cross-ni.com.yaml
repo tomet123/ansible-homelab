@@ -1,0 +1,4 @@
+keycloak_quarkus_host: 0.0.0.0
+keycloak_quarkus_port: 443
+keycloak_quarkus_log: file
+keycloak_quarkus_proxy_mode: edge

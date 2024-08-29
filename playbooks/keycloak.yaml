@@ -1,5 +1,5 @@
-- name: Setup freeipa - replica
-  hosts: freeipa2
+- name: Setup keycloak
+  hosts: keycloak
   become: true
   gather_facts: True
   pre_tasks:
@@ -8,8 +8,4 @@
       changed_when: False
     - setup: # aka gather_facts
   roles:
-      - utils/copy-certs
-      - freeipa.ansible_freeipa.ipareplica
-      - freeipa/ip-dns-postconf
-  vars:
-    ipaserver_hostname: freeipa2.cross-ni.com
+      - middleware_automation.keycloak.keycloak_quarkus

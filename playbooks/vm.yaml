@@ -11,6 +11,7 @@
       - utils/root-access
       - utils/cpu-microcode
       - utils/hostname
+      - freeipa.ansible_freeipa.ipaclient
       - monitoring/sw-node-exporter
       - devsec.hardening.os_hardening
 #      - devsec.hardening.ssh_hardening

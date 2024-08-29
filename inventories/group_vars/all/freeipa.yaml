@@ -10,11 +10,17 @@ ipaserver_dirsrv_pin: ""
 ipaserver_http_pin: ""
 ipaserver_no_pkinit: true
 ipaserver_forwarders: 8.8.8.8,1.1.1.1
+ipaserver_allow_zone_overlap: true
+
+
+ipareplica_domain: cross-ni.com
+ipareplica_realm: CROSS-NI.COM
+ipareplica_setup_dns: yes
 
 ipareplica_dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files }}"
 ipareplica_http_cert_files: "{{ ipaserver_http_cert_files }}"
 ipareplica_dirsrv_pin: ""
 ipareplica_http_pin: ""
+ipareplica_no_pkinit: true
 ipareplica_forwarders: 8.8.8.8,1.1.1.1
-#ipareplica_dirsrv_cert_name:
-#ipareplica_http_cert_name:
+ipareplica_allow_zone_overlap: true

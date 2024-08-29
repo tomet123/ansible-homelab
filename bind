@@ -9,3 +9,7 @@ ip dhcp pool cni_81_freeipa1
 ip dhcp pool cni_81_freeipa2
  host 192.168.81.23 255.255.255.0
  client-identifier 01bc.2411.4b64.d6
+
+ip dhcp pool cni_81_keycloak
+ host 192.168.81.24 255.255.255.0
+ client-identifier 01bc.2411.3050.13

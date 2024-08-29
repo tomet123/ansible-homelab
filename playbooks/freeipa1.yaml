@@ -10,3 +10,6 @@
   roles:
       - utils/copy-certs
       - freeipa.ansible_freeipa.ipaserver
+      - freeipa/ip-dns-postconf
+  vars:
+    ipaserver_hostname: freeipa1.cross-ni.com
