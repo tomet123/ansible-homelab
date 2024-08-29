@@ -1,5 +1,5 @@
-- name: Setup proxmox
-  hosts: proxmox
+- name: Setup freeipa - replica
+  hosts: freeipa2
   become: true
   gather_facts: True
   pre_tasks:
@@ -8,8 +8,4 @@
       changed_when: False
     - setup: # aka gather_facts
   roles:
-      - proxmox/pve-postinstall
-      - proxmox/networking
-      - utils/cpu-microcode
-      - monitoring/sw-node-exporter
-      - monitoring/sw-pve-monitor
+      - ipareplica

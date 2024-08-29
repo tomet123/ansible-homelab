@@ -1,0 +1,53 @@
+---
+- name: Install Python and venv
+  ansible.builtin.apt:
+    name: ["python3","python3-pip","python3-virtualenv"]
+    state: present
+    update_cache: yes
+
+- name: Create base folder
+  ansible.builtin.file:
+    name: "{{ pve_monitor_base_path }}"
+    state: directory
+
+- name: Copy python requirements
+  ansible.builtin.copy:
+    src: requirements.txt
+    dest: "{{ pve_monitor_base_path }}/requirements.txt"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy python script
+  ansible.builtin.copy:
+    src: mon.py
+    dest: "{{ pve_monitor_base_path }}/mon.py"
+    owner: root
+    group: root
+    mode: '0644'
+
+
+- name: Initiate virtualenv
+  ansible.builtin.pip:
+    virtualenv: "{{ pve_monitor_base_path }}"
+    virtualenv_python: python3
+    requirements: "{{ pve_monitor_base_path }}/requirements.txt"
+
+- name: Template a systemd service
+  ansible.builtin.template:
+    src: proxmox-mon.service.tmpl
+    dest: /etc/systemd/system/proxmox-mon.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: "restart timer"
+
+- name: Template a systemd service timer
+  ansible.builtin.template:
+    src: proxmox-mon.timer.tmpl
+    dest: /etc/systemd/system/proxmox-mon.timer
+    owner: root
+    group: root
+    mode: '0644'
+  notify: "restart timer"
+

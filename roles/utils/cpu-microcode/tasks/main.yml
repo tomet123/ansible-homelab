@@ -2,14 +2,14 @@
 - name: Check if it is x86 intel CPU
   ansible.builtin.set_fact:
     cpu_vendor: 'intel'
-  when: 
+  when:
     - ansible_processor | lower is search("intel")
     - ansible_architecture == "x86_64"
 
 - name: Check if it is x86 amd CPU
   ansible.builtin.set_fact:
     cpu_vendor: 'amd'
-  when: 
+  when:
     - ansible_processor | lower is search("amd")
     - ansible_architecture == "x86_64"
 
@@ -32,7 +32,6 @@
   ansible.builtin.package:
     name: "{{ intel_cpu_packages }}"
     state: absent
-    purge: true
   when:
     - ansible_virtualization_role == 'guest'
     - cpu_vendor == 'intel'
@@ -41,7 +40,6 @@
   ansible.builtin.package:
     name: "{{ amd_cpu_packages }}"
     state: absent
-    purge: true
   when:
     - ansible_virtualization_role == 'guest'
     - cpu_vendor == 'amd'

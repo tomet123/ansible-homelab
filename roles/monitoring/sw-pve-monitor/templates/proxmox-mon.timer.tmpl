@@ -1,0 +1,10 @@
+[Unit]
+Description=Run proxmox data export every 5 minutes
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=300
+AccuracySec=1ms
+
+[Install]
+WantedBy=timers.target 

@@ -1,0 +1,30 @@
+gitlab_version: "17.3.1"
+gitlab_external_url: 'https://git.cross-ni.com'
+gitlab_time_zone: 'Europe/Prague'
+
+gitlab_backup_keep_time: '-1'
+gitlab_registry_enable: "false"
+
+
+gitlab_additional_configurations:
+  - prometheus:
+      - key: "enabled"
+        type: "plain"
+        value: "false"
+  - alertmanager:
+      - key: "enabled"
+        type: "plain"
+        value: "false"
+#  - grafana:
+#      - key: "enable"
+#        type: "plain"
+#        value: "false"
+  - node_exporter:
+      - key: "enabled"
+        type: "plain"
+        value: "false"
+  - postgresql:
+      - key: "shared_buffers"
+        value: "256MB"
+
+# monitoring info https://forge.etsi.org/rep/help/administration/monitoring/prometheus/index.md

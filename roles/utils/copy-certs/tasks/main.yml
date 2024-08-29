@@ -1,0 +1,20 @@
+---
+- name: Creates directory
+  ansible.builtin.file:
+    path: /etc/web_crt
+    state: directory
+
+- name: Copy certificate
+  ansible.builtin.copy:
+    content: "{{ crt_cert }}"
+    dest: "/etc/web_crt/crt.pem"
+
+- name: Copy certificate key
+  ansible.builtin.copy:
+    content: "{{ crt_key }}"
+    dest: "/etc/web_crt/key.pem"
+
+- name: Copy certificate ca
+  ansible.builtin.copy:
+    content: "{{ crt_chain }}"
+    dest: "/etc/web_crt/ca.pem"

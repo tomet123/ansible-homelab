@@ -1,0 +1,27 @@
+auto lo
+iface lo inet loopback
+
+{% for int in ansible_facts.interfaces if "en" in int and "." not in int  %}
+iface {{ int }} inet manual
+{% endfor %}
+
+{% for vlan in proxmox_vlans %}
+iface {{ proxmox_uplink }}.{{ vlan }} inet manual
+
+auto vmbr{{ vlan }}
+iface vmbr{{ vlan }} inet static
+        bridge-ports {{ proxmox_uplink }}.{{ vlan }}
+{% if vlan in proxmox_ips %}
+{% if proxmox_ips[vlan].address %}
+        address {{ proxmox_ips[vlan].address }}
+{% endif %}
+{% if proxmox_ips[vlan].gateway %}
+        gateway {{ proxmox_ips[vlan].gateway }}
+{% endif %}
+{% endif %}
+        bridge-stp off
+        bridge-fd 0
+# vlan {{ vlan }}
+
+
+{% endfor %}

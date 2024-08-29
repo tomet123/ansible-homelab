@@ -34,11 +34,11 @@ if [ "$1" == "ansible-playbook" ] && grep -qve "-i " <(echo "$@"); then
 fi
 
 docker run -it --rm \
-    -v /home/$USER/.ssh/:/root/.ssh \
+    -v /home/$USER/.ssh/:/root/.sshref \
     -v /home/$USER/.kube/:/root/.kube:ro \
     -v $PWD:/repo/ \
     homelab-ansible:$ansible_image_version \
-    "chown -R 600:600 /root/.ssh;chown -R root:root /root/.ssh; $ansible_cmd"
+    "cp /root/.sshref /root/.ssh -R; chown -R 600:600 /root/.ssh;chown -R root:root /root/.ssh; $ansible_cmd"
 
 }
 

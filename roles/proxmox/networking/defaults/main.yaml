@@ -1,0 +1,5 @@
+proxmox_uplink: ens1n0
+proxmox_vlans:
+  - 81
+
+proxmox_ips: []

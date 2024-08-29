@@ -1,0 +1,11 @@
+---
+- name: Restart timer
+  listen: "restart timer"
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: proxmox-mon.timer
+    enabled: true
+    state: restarted
+  when:
+    - not ansible_check_mode
+

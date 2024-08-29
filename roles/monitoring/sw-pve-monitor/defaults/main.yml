@@ -1,0 +1,5 @@
+---
+# defaults file for sw-pve-monitor
+
+pve_monitor_base_path: /opt/pve-mon
+pve_monitor_output_file: /var/lib/node_exporter/cluster.prom

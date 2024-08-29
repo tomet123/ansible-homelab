@@ -1,0 +1,13 @@
+---
+- name: Gather network interface facts
+  ansible.builtin.setup:
+    gather_subset:
+      - network
+
+
+- name: Generate network interface configuration
+  ansible.builtin.template:
+    src: interfaces.j2
+    dest: /etc/network/interfaces
+  notify:
+    - Restart networking

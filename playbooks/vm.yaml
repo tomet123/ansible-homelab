@@ -1,5 +1,5 @@
-- name: Setup proxmox
-  hosts: proxmox
+- name: Setup generic vm
+  hosts: vm
   become: true
   gather_facts: True
   pre_tasks:
@@ -8,8 +8,9 @@
       changed_when: False
     - setup: # aka gather_facts
   roles:
-      - proxmox/pve-postinstall
-      - proxmox/networking
+      - utils/root-access
       - utils/cpu-microcode
+      - utils/hostname
       - monitoring/sw-node-exporter
-      - monitoring/sw-pve-monitor
+      - devsec.hardening.os_hardening
+#      - devsec.hardening.ssh_hardening

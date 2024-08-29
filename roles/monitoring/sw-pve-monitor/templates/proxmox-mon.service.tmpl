@@ -1,0 +1,6 @@
+[Unit]
+Description=Generate proxmox statistics report file for prometheus
+
+[Service]
+ExecStart={{ pve_monitor_base_path }}/bin/python {{ pve_monitor_base_path }}/mon.py
+Environment="OUTPUT={{ pve_monitor_output_file }}"

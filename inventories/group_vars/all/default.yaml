@@ -1,0 +1,3 @@
+os_pam_enabled: false
+os_remove_additional_root_users: true
+os_auth_pw_max_age: 999999

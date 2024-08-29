@@ -1,0 +1,6 @@
+proxmox_uplink: ens3f0
+
+proxmox_ips:
+  81:
+    address: 192.168.81.5/24
+    gateway: 192.168.81.1
