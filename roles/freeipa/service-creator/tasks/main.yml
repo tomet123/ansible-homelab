@@ -1,0 +1,18 @@
+- name: Manage Keycloak service in FreeIPA
+  freeipa.ansible_freeipa.ipaservice:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ keycloak_service_name }}"
+    host: "{{ inventory_hostname }}"
+    force: true
+    requires_pre_auth: true
+    ok_as_delegate: true
+    ok_to_auth_as_delegate: true
+    state: present
+  register: cert
+
+- name: Generate keytab for Keycloak service using ipa-getkeytab
+  ansible.builtin.command:
+    cmd: >
+      echo '{{ ipaadmin_password }}' | kinit admin; ipa-getkeytab -p {{ keycloak_service_name }}@{{ ipaserver_realm }}
+      -k {{ keytab_directory }}/{{ keytab_filename }}
+    creates: "{{ keytab_directory }}/{{ keytab_filename }}"

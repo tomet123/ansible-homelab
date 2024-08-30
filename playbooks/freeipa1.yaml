@@ -13,3 +13,7 @@
       - freeipa/ip-dns-postconf
   vars:
     ipaserver_hostname: freeipa1.cross-ni.com
+
+
+
+# before install update-crypto-policies --set LEGACY

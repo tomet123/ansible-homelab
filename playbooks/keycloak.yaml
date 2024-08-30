@@ -8,4 +8,132 @@
       changed_when: False
     - setup: # aka gather_facts
   roles:
+      - utils/copy-certs
+      - freeipa/service-creator
       - middleware_automation.keycloak.keycloak_quarkus
+      - linux-system-roles.firewall
+
+  tasks:
+  - name: Keycloak Realm Role
+    ansible.builtin.include_role:
+      name: middleware_automation.keycloak.keycloak_realm
+    vars:
+      keycloak_realm: Main
+      keycloak_user_federation:
+        - realm: Main
+          name: ldap
+          provider_id: ldap
+          provider_type: org.keycloak.storage.UserStorageProvider
+          config:
+            serverPrincipal: "HTTP/{{ inventory_hostname }}@{{ ipaserver_realm }}"
+            pagination: true
+            fullSyncPeriod: '1000'
+            startTls: false
+            usersDn: cn=users,cn=accounts,dc=cross-ni,dc=com
+            bindCredential: "{{ ipaadmin_password }}"
+            bindDn: uid=admin,cn=users,cn=accounts,dc=cross-ni,dc=com
+            connectionPooling: true
+            cachePolicy: DEFAULT
+            useKerberosForPasswordAuthentication: false
+            importEnabled: true
+            enabled: true
+            changedSyncPeriod: '-1'
+            usernameLDAPAttribute: uid
+            vendor: rhds
+            uuidLDAPAttribute: uid
+            allowKerberosAuthentication: true
+            connectionUrl: ldaps://freeipa1.cross-ni.com ldaps://freeipa2.cross-ni.com
+            syncRegistrations: false
+            authType: simple
+            connectionTimeout: '50000'
+            debug: false
+            useTruststoreSpi: always
+            keyTab: /opt/keycloak/keycloak.keytab
+            usePasswordModifyExtendedOp: false
+            trustEmail: false
+            kerberosRealm: "{{ ipaserver_realm }}"
+            userObjectClasses: person
+            rdnLDAPAttribute: uid
+            editMode: WRITABLE
+            validatePasswordPolicy: true
+          mappers:
+            - name: "first name"
+              providerId: "user-attribute-ldap-mapper"
+              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+              config:
+                user.model.attribute: firstName
+                read.only: false
+                is.mandatory.in.ldap: true
+                ldap.attribute: givenName
+                always.read.value.from.ldap: true
+            - name: "last name"
+              providerId: "user-attribute-ldap-mapper"
+              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+              config:
+                user.model.attribute: lastName
+                read.only: false
+                is.mandatory.in.ldap: true
+                ldap.attribute: sn
+                always.read.value.from.ldap: true
+
+            - name: "creation date"
+              providerId: "user-attribute-ldap-mapper"
+              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+              config:
+                user.model.attribute: createTimestamp
+                read.only: true
+                is.mandatory.in.ldap: false
+                ldap.attribute: createTimestamp
+                always.read.value.from.ldap: true
+
+            - name: "modify date"
+              providerId: "user-attribute-ldap-mapper"
+              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+              config:
+                user.model.attribute: modifyTimestamp
+                read.only: true
+                is.mandatory.in.ldap: false
+                ldap.attribute: modifyTimestamp
+                always.read.value.from.ldap: true
+
+            - name: "email"
+              providerId: "user-attribute-ldap-mapper"
+              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+              config:
+                user.model.attribute: email
+                read.only: true
+                is.mandatory.in.ldap: false
+                ldap.attribute: mail
+                always.read.value.from.ldap: true
+
+            - name: "username"
+              providerId: "user-attribute-ldap-mapper"
+              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+              config:
+                user.model.attribute: username
+                read.only: true
+                is.mandatory.in.ldap: true
+                ldap.attribute: uid
+                always.read.value.from.ldap: true
+
+            - name: "fullname - displayName"
+              providerId: "user-attribute-ldap-mapper"
+              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+              config:
+                user.model.attribute: displayName
+                read.only: true
+                is.mandatory.in.ldap: true
+                ldap.attribute: displayName
+                always.read.value.from.ldap: true
+
+            - name: "IPA groups mapper"
+              providerId: group-ldap-mapper
+              config:
+                drop.non.existing.groups.during.sync: 'true'
+                membership.ldap.attribute: member
+                groups.dn: cn=groups,cn=accounts,dc=cross-ni,dc=com
+                mode: READ_ONLY
+                groups.object.classes: ipaobject,ipausergroup
+                use.realm.groups.mapping: true
+                groups.name.ldap.attribute: cn
+                always.read.value.from.ldap: true

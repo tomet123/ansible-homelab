@@ -1,0 +1,14 @@
+---
+ipaadmin_password: "password"
+
+# The service name for Keycloak
+keycloak_service_name: "HTTP/keycloak.example.com"
+
+# The directory to store the keytab file on the Keycloak server
+keytab_directory: "/opt/keycloak"
+
+# The name of the keytab file
+keytab_filename: "keycloak.keytab"
+
+
+keycloak_role: "User Administrator"

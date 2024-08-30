@@ -8,10 +8,10 @@
       changed_when: False
     - setup: # aka gather_facts
   roles:
-      - utils/root-access
-      - utils/cpu-microcode
-      - utils/hostname
+#      - utils/root-access
+#      - utils/cpu-microcode
+#      - utils/hostname
       - freeipa.ansible_freeipa.ipaclient
-      - monitoring/sw-node-exporter
-      - devsec.hardening.os_hardening
+#      - monitoring/sw-node-exporter
+#      - devsec.hardening.os_hardening
 #      - devsec.hardening.ssh_hardening

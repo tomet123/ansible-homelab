@@ -1,4 +1,28 @@
-keycloak_quarkus_host: 0.0.0.0
-keycloak_quarkus_port: 443
+keycloak_quarkus_host: "{{ inventory_hostname }}"
+keycloak_quarkus_http_port: 80
+keycloak_quarkus_https_port: 443
+keycloak_quarkus_https_key_file_enabled: true
 keycloak_quarkus_log: file
 keycloak_quarkus_proxy_mode: edge
+keycloak_quarkus_key_file: /etc/web_crt/key.pem
+keycloak_quarkus_cert_file: /etc/web_crt/crt.pem
+
+keycloak_host: "{{ inventory_hostname }}"
+keycloak_http_port: 80
+keycloak_https_port: 443
+keycloak_url: "https://{{ keycloak_host }}:{{ keycloak_https_port }}"
+keycloak_management_url: "{{ keycloak_url }}"
+keycloak_context: ""
+
+keycloak_service_name: "HTTP/keycloak.cross-ni.com"
+keycloak_quarkus_jvm_package: java-21-openjdk-headless
+keycloak_quarkus_version: 23.0.6
+
+firewall:
+  - previous: replaced
+  - service: ssh
+    state: enabled
+  - service: http
+    state: enabled
+  - service: https
+    state: enabled
