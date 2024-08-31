@@ -14,126 +14,178 @@
       - linux-system-roles.firewall
 
   tasks:
-  - name: Keycloak Realm Role
-    ansible.builtin.include_role:
-      name: middleware_automation.keycloak.keycloak_realm
-    vars:
-      keycloak_realm: Main
-      keycloak_user_federation:
-        - realm: Main
-          name: ldap
-          provider_id: ldap
-          provider_type: org.keycloak.storage.UserStorageProvider
-          config:
-            serverPrincipal: "HTTP/{{ inventory_hostname }}@{{ ipaserver_realm }}"
-            pagination: true
-            fullSyncPeriod: '1000'
-            startTls: false
-            usersDn: cn=users,cn=accounts,dc=cross-ni,dc=com
-            bindCredential: "{{ ipaadmin_password }}"
-            bindDn: uid=admin,cn=users,cn=accounts,dc=cross-ni,dc=com
-            connectionPooling: true
-            cachePolicy: DEFAULT
-            useKerberosForPasswordAuthentication: false
-            importEnabled: true
-            enabled: true
-            changedSyncPeriod: '-1'
-            usernameLDAPAttribute: uid
-            vendor: rhds
-            uuidLDAPAttribute: uid
-            allowKerberosAuthentication: true
-            connectionUrl: ldaps://freeipa1.cross-ni.com ldaps://freeipa2.cross-ni.com
-            syncRegistrations: false
-            authType: simple
-            connectionTimeout: '50000'
-            debug: false
-            useTruststoreSpi: always
-            keyTab: /opt/keycloak/keycloak.keytab
-            usePasswordModifyExtendedOp: false
-            trustEmail: false
-            kerberosRealm: "{{ ipaserver_realm }}"
-            userObjectClasses: person
-            rdnLDAPAttribute: uid
-            editMode: WRITABLE
-            validatePasswordPolicy: true
-          mappers:
-            - name: "first name"
-              providerId: "user-attribute-ldap-mapper"
-              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
-              config:
-                user.model.attribute: firstName
-                read.only: false
-                is.mandatory.in.ldap: true
-                ldap.attribute: givenName
-                always.read.value.from.ldap: true
-            - name: "last name"
-              providerId: "user-attribute-ldap-mapper"
-              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
-              config:
-                user.model.attribute: lastName
-                read.only: false
-                is.mandatory.in.ldap: true
-                ldap.attribute: sn
-                always.read.value.from.ldap: true
 
-            - name: "creation date"
-              providerId: "user-attribute-ldap-mapper"
-              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
-              config:
-                user.model.attribute: createTimestamp
-                read.only: true
-                is.mandatory.in.ldap: false
-                ldap.attribute: createTimestamp
-                always.read.value.from.ldap: true
+    - name: Add ldap-passwd-reset user with specific details
+      freeipa.ansible_freeipa.ipauser:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: ldap-passwd-reset
+        givenname: Service
+        sn: Password reset
+        password: "{{ keycloak_ipa_pass_reset_user_pass }}"
+        state: present
 
-            - name: "modify date"
-              providerId: "user-attribute-ldap-mapper"
-              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
-              config:
-                user.model.attribute: modifyTimestamp
-                read.only: true
-                is.mandatory.in.ldap: false
-                ldap.attribute: modifyTimestamp
-                always.read.value.from.ldap: true
+    - name: Add ldap-passwd-reset user with specific details
+      freeipa.ansible_freeipa.ipauser:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: ldap-passwd-reset
+        krbpasswordexpiration: "2050-01-19 23:59:59"
+        state: present
 
-            - name: "email"
-              providerId: "user-attribute-ldap-mapper"
-              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
-              config:
-                user.model.attribute: email
-                read.only: true
-                is.mandatory.in.ldap: false
-                ldap.attribute: mail
-                always.read.value.from.ldap: true
+    - name: Create Self Password Reset role
+      freeipa.ansible_freeipa.iparole:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: Self Password Reset
+        user:
+          - ldap-passwd-reset
+        privilege:
+          - Modify Users and Reset passwords
+          - Password Policy Readers
+          - Kerberos Ticket Policy Readers
+      ignore_errors: true
 
-            - name: "username"
-              providerId: "user-attribute-ldap-mapper"
-              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
-              config:
-                user.model.attribute: username
-                read.only: true
-                is.mandatory.in.ldap: true
-                ldap.attribute: uid
-                always.read.value.from.ldap: true
 
-            - name: "fullname - displayName"
-              providerId: "user-attribute-ldap-mapper"
-              providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
-              config:
-                user.model.attribute: displayName
-                read.only: true
-                is.mandatory.in.ldap: true
-                ldap.attribute: displayName
-                always.read.value.from.ldap: true
+    - name: "Ensure permission Change User password includes the attribute krbLastPwdChange"
+      freeipa.ansible_freeipa.ipapermission:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: "System: Change User password"
+        attrs:
+          - krbLastPwdChange
+          - krbLastPwdChange
+          - krbpasswordexpiration
+          - krbprincipalkey
+          - passwordhistory
+          - sambalmpassword
+          - sambantpassword
+          - userpassword
+      ignore_errors: true
 
-            - name: "IPA groups mapper"
-              providerId: group-ldap-mapper
-              config:
-                drop.non.existing.groups.during.sync: 'true'
-                membership.ldap.attribute: member
-                groups.dn: cn=groups,cn=accounts,dc=cross-ni,dc=com
-                mode: READ_ONLY
-                groups.object.classes: ipaobject,ipausergroup
-                use.realm.groups.mapping: true
-                groups.name.ldap.attribute: cn
-                always.read.value.from.ldap: true
+    - name: Keycloak Realm Role
+      ansible.builtin.include_role:
+        name: middleware_automation.keycloak.keycloak_realm
+      vars:
+        keycloak_realm: Main
+        keycloak_user_federation:
+          - realm: Main
+            name: ldap
+            provider_id: ldap
+            provider_type: org.keycloak.storage.UserStorageProvider
+            config:
+              serverPrincipal: "HTTP/{{ inventory_hostname }}@{{ ipaserver_realm }}"
+              pagination: true
+              fullSyncPeriod: '1000'
+              startTls: false
+              usersDn: cn=users,cn=accounts,dc=cross-ni,dc=com
+              bindCredential: "{{ ipaadmin_password }}"
+              bindDn: uid=admin,cn=users,cn=accounts,dc=cross-ni,dc=com
+              connectionPooling: true
+              cachePolicy: DEFAULT
+              useKerberosForPasswordAuthentication: false
+              importEnabled: true
+              enabled: true
+              changedSyncPeriod: '-1'
+              usernameLDAPAttribute: uid
+              vendor: rhds
+              uuidLDAPAttribute: uid
+              allowKerberosAuthentication: true
+              connectionUrl: ldaps://freeipa1.cross-ni.com ldaps://freeipa2.cross-ni.com
+              syncRegistrations: false
+              authType: simple
+              connectionTimeout: '50000'
+              debug: false
+              useTruststoreSpi: always
+              keyTab: /opt/keycloak/keycloak.keytab
+              usePasswordModifyExtendedOp: false
+              trustEmail: false
+              kerberosRealm: "{{ ipaserver_realm }}"
+              userObjectClasses: person
+              rdnLDAPAttribute: uid
+              editMode: WRITABLE
+              validatePasswordPolicy: true
+            mappers:
+              - name: "first name"
+                providerId: "user-attribute-ldap-mapper"
+                providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+                config:
+                  user.model.attribute: firstName
+                  read.only: false
+                  is.mandatory.in.ldap: true
+                  ldap.attribute: givenName
+                  always.read.value.from.ldap: true
+              - name: "last name"
+                providerId: "user-attribute-ldap-mapper"
+                providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+                config:
+                  user.model.attribute: lastName
+                  read.only: false
+                  is.mandatory.in.ldap: true
+                  ldap.attribute: sn
+                  always.read.value.from.ldap: true
+
+              - name: "creation date"
+                providerId: "user-attribute-ldap-mapper"
+                providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+                config:
+                  user.model.attribute: createTimestamp
+                  read.only: true
+                  is.mandatory.in.ldap: false
+                  ldap.attribute: createTimestamp
+                  always.read.value.from.ldap: true
+
+              - name: "modify date"
+                providerId: "user-attribute-ldap-mapper"
+                providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+                config:
+                  user.model.attribute: modifyTimestamp
+                  read.only: true
+                  is.mandatory.in.ldap: false
+                  ldap.attribute: modifyTimestamp
+                  always.read.value.from.ldap: true
+
+              - name: "email"
+                providerId: "user-attribute-ldap-mapper"
+                providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+                config:
+                  user.model.attribute: email
+                  read.only: true
+                  is.mandatory.in.ldap: false
+                  ldap.attribute: mail
+                  always.read.value.from.ldap: true
+
+              - name: "username"
+                providerId: "user-attribute-ldap-mapper"
+                providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+                config:
+                  user.model.attribute: username
+                  read.only: true
+                  is.mandatory.in.ldap: true
+                  ldap.attribute: uid
+                  always.read.value.from.ldap: true
+
+              - name: "fullname - displayName"
+                providerId: "user-attribute-ldap-mapper"
+                providerType: "org.keycloak.storage.ldap.mappers.LDAPStorageMapper"
+                config:
+                  user.model.attribute: displayName
+                  read.only: true
+                  is.mandatory.in.ldap: true
+                  ldap.attribute: displayName
+                  always.read.value.from.ldap: true
+
+              - name: "IPA groups mapper"
+                providerId: group-ldap-mapper
+                config:
+                  drop.non.existing.groups.during.sync: 'true'
+                  membership.ldap.attribute: member
+                  groups.dn: cn=groups,cn=accounts,dc=cross-ni,dc=com
+                  mode: READ_ONLY
+                  groups.object.classes: ipaobject,ipausergroup
+                  use.realm.groups.mapping: true
+                  groups.name.ldap.attribute: cn
+                  always.read.value.from.ldap: true
+
+              - name: "Password"
+                providerId: LdapPasswordExpirationMapper
+                config:
+                  freeipaApiUrl: 'https://freeipa1.cross-ni.com/ipa'
+                  freeipaUser: ldap-passwd-reset
+                  freeipaPassword: "{{ keycloak_ipa_pass_reset_user_pass }}"
